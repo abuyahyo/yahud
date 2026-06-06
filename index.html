@@ -268,10 +268,11 @@ async function goToPage(p){
   const ch = vol.chapters[pg.c];
   $("#crumb").innerHTML = `<b>${esc(vol.title)}</b> — ${esc(ch.title)}`;
   $("#cover").style.display = (p === 1) ? "" : "none";
+  const body = pg.t ? esc(pg.t) : '<div class="empty"><span class="sym">∅</span><div class="msg">هذه الصفحة فارغة في المصدر (shamela.ws)</div></div>';
   $("#reader").innerHTML = `
     <article class="page-card">
       <div class="page-head"><div class="chapter">${esc(ch.title)}</div><div class="pnum">ص ${arNum(p)} / ${arNum(META.totalPages)}</div></div>
-      <div class="page-body">${esc(pg.t)}</div>
+      <div class="page-body">${body}</div>
       <div class="pagenav">
         <button id="prevBtn" ${p<=1?"disabled":""}>السابقة ◄</button>
         <span class="jump">انتقال إلى:
