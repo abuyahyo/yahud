@@ -1,0 +1,80 @@
+{
+ "title": "موسوعة اليهود واليهودية والصهيونية",
+ "author": "د. عبد الوهاب المسيري",
+ "source": "https://shamela.ws/book/2074",
+ "totalPages": 8486,
+ "volumes": [
+  {
+   "n": 0,
+   "title": "المقدمة",
+   "start": 1,
+   "end": 16,
+   "file": "intro.json",
+   "pageCount": 16,
+   "chapterCount": 5
+  },
+  {
+   "n": 1,
+   "title": "المجلد الأول: الإطار النظرى",
+   "start": 17,
+   "end": 913,
+   "file": "vol-1.json",
+   "pageCount": 897,
+   "chapterCount": 25
+  },
+  {
+   "n": 2,
+   "title": "المجلد الثانى: الجماعات اليهودية.. إشكاليات",
+   "start": 914,
+   "end": 2302,
+   "file": "vol-2.json",
+   "pageCount": 1389,
+   "chapterCount": 26
+  },
+  {
+   "n": 3,
+   "title": "المجلد الثالث: الجماعات اليهودية: التحديث والثقافة",
+   "start": 2303,
+   "end": 3845,
+   "file": "vol-3.json",
+   "pageCount": 1543,
+   "chapterCount": 27
+  },
+  {
+   "n": 4,
+   "title": "المجلد الرابع: الجماعات اليهودية.. تواريخ",
+   "start": 3846,
+   "end": 5041,
+   "file": "vol-4.json",
+   "pageCount": 1196,
+   "chapterCount": 40
+  },
+  {
+   "n": 5,
+   "title": "المجلد الخامس: اليهودية.. المفاهيم والفرق",
+   "start": 5042,
+   "end": 6400,
+   "file": "vol-5.json",
+   "pageCount": 1359,
+   "chapterCount": 38
+  },
+  {
+   "n": 6,
+   "title": "المجلد السادس: الصهيونية",
+   "start": 6401,
+   "end": 7564,
+   "file": "vol-6.json",
+   "pageCount": 1164,
+   "chapterCount": 32
+  },
+  {
+   "n": 7,
+   "title": "المجلد السابع: إسرائيل.. المستوطن الصهيوني",
+   "start": 7565,
+   "end": 8486,
+   "file": "vol-7.json",
+   "pageCount": 922,
+   "chapterCount": 22
+  }
+ ]
+}
