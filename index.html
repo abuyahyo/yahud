@@ -196,17 +196,30 @@ async function init(){
     const hashP = (location.hash.match(/p=(\d+)/)||[])[1];
     const startP = hashP ? +hashP : (saved || 1);
     await goToPage(Math.max(1, Math.min(META.totalPages, startP)));
+    // Boshqa jildlarni fonda yuklab, qidiruvni tezlashtirish
+    setTimeout(prefetchAll, 600);
   }catch(e){
     $("#reader").innerHTML = '<div class="empty"><span class="sym">⚠</span><div class="msg">تعذّر تحميل البيانات</div></div>';
   }
 }
 
-async function loadVol(n){
-  if (VOLS[n]) return VOLS[n];
+const VOL_PROMISES = {};   // n → Promise (de-dup concurrent fetches)
+function loadVol(n){
+  if (VOLS[n]) return Promise.resolve(VOLS[n]);
+  if (VOL_PROMISES[n]) return VOL_PROMISES[n];
   const v = META.volumes.find(x=>x.n===n);
-  const data = await (await fetch(v.file)).json();
-  VOLS[n] = data;
-  return data;
+  VOL_PROMISES[n] = fetch(v.file).then(r => r.json()).then(data => {
+    // Pre-normalize text for fast search; computed once per page.
+    for (const pg of data.pages) pg._n = normalize(pg.t);
+    VOLS[n] = data;
+    return data;
+  });
+  return VOL_PROMISES[n];
+}
+
+/* Background prefetch all volumes so search is instant after first use. */
+function prefetchAll(){
+  for (const v of META.volumes) loadVol(v.n);
 }
 
 /* TOC drawer */
@@ -330,6 +343,17 @@ function snippet(text, nq){
   return esc(part).replace(re, m => "<mark>" + m + "</mark>");
 }
 
+function searchVolSync(vol, vn, nq, hits, limit){
+  for (const pg of vol.pages) {
+    if (pg._n.indexOf(nq) >= 0) {
+      const ch = vol.chapters[pg.c];
+      hits.push({ vol: vn, ch: ch.title, p: pg.p, snip: snippet(pg.t, nq) });
+      if (hits.length >= limit) return true;
+    }
+  }
+  return false;
+}
+
 async function runSearch(){
   const q = SQ.value.trim();
   const nq = normalize(q);
@@ -337,33 +361,40 @@ async function runSearch(){
   SR.innerHTML = ""; SC.textContent = ""; SP.classList.remove("show");
   if (nq.length < 2) return;
   const hits = [];
-  const total = META.volumes.length;
-  let scanned = 0;
-  SP.classList.add("show");
+  const LIMIT = 200;
+  // 1) Avval cache'dagi jildlardan darrov qidiramiz — natija lahzasiz chiqadi.
   for (const v of META.volumes) {
-    if (token !== searchToken) return;
-    SP.textContent = `جارٍ البحث في المجلد ${arNum(v.n)}/${arNum(7)}…`;
-    const vol = await loadVol(v.n);
-    if (token !== searchToken) return;
-    for (const pg of vol.pages) {
-      const nt = normalize(pg.t);
-      if (nt.indexOf(nq) >= 0) {
-        const ch = vol.chapters[pg.c];
-        hits.push({ vol: v.n, volTitle: v.title, ch: ch.title, p: pg.p, snip: snippet(pg.t, nq) });
-        if (hits.length >= 200) break;
-      }
-    }
-    scanned++;
-    SC.textContent = arNum(hits.length) + (hits.length >= 200 ? "+" : "") + " نتيجة";
-    if (hits.length >= 200) break;
+    if (VOLS[v.n] && searchVolSync(VOLS[v.n], v.n, nq, hits, LIMIT)) break;
   }
-  SP.classList.remove("show");
+  renderHits(hits, q, nq);
+  // 2) Yuklanmagan jildlarni parallel yuklab, ularda ham qidiramiz.
+  const pending = META.volumes.filter(v => !VOLS[v.n]);
+  if (pending.length && hits.length < LIMIT) {
+    SP.classList.add("show");
+    SP.textContent = `جارٍ تحميل ${arNum(pending.length)} مجلدًا…`;
+    let doneCount = 0;
+    await Promise.all(pending.map(v => loadVol(v.n).then(vol => {
+      if (token !== searchToken) return;
+      doneCount++;
+      SP.textContent = `جارٍ تحميل ${arNum(pending.length - doneCount)} مجلدًا…`;
+      if (hits.length < LIMIT) {
+        searchVolSync(vol, v.n, nq, hits, LIMIT);
+        renderHits(hits, q, nq);
+      }
+    })));
+    SP.classList.remove("show");
+  }
   if (token !== searchToken) return;
   if (!hits.length) {
     SR.innerHTML = '<div class="empty"><span class="sym">∅</span><div class="msg">لا توجد نتائج لـ «' + esc(q) + '»</div></div>';
     SC.textContent = "";
-    return;
   }
+}
+
+function renderHits(hits, q, nq){
+  hits.sort((a,b) => a.p - b.p);   // jild/sahifa tartibida
+  SC.textContent = arNum(hits.length) + (hits.length >= 200 ? "+" : "") + " نتيجة";
+  if (!hits.length) { SR.innerHTML = ""; return; }
   SR.innerHTML = hits.map(h =>
     `<div class="hit" data-p="${h.p}"><div class="hit-head"><b>${esc(h.ch)}</b><span>ج ${arNum(h.vol)} • ص ${arNum(h.p)}</span></div><div class="hit-snip">${h.snip}</div></div>`
   ).join("");
