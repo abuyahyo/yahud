@@ -667,7 +667,7 @@ const AI_SYS = [
   "- Javobni FAQAT berilgan kontekstga asoslantir. Agar javob kontekstda bo'lmasa, buni ochiq ayt va o'zingdan to'qima.",
   "- Har bir muhim da'voni [ص N] ko'rinishidagi sahifa havolasi bilan asosla (N — kontekstdagi sahifa raqami), toki o'quvchi nimaga asoslanganingni ko'rsin.",
   "- Bu al-Messiriyning ilmiy talqini ekanini yodda tut; mutlaq haqiqat sifatida emas, muallif nuqtai nazari sifatida taqdim et.",
-  "- Aniq va hurmatli yoz; ortiqcha muqaddimasiz to'g'ridan-to'g'ri xulosadan boshla.",
+  "- Aniq va hurmatli yoz. To'g'ridan-to'g'ri javob mazmunidan boshla — kitob nomini, muallif ismini yoki «…ensiklopediyasiga ko'ra» kabi muqaddimani javob boshida takrorlama.",
   "- Sodda formatla: muhim atamani **qalin** qilsang bo'ladi, lekin sarlavha belgilari (#) yoki ortiqcha yulduzchalar ishlatma."
 ].join("\n");
 const aiToLatin = s => String(s).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
@@ -906,6 +906,7 @@ async function aiAsk(){
   aiBusy = true; $("#aiSend").disabled = true;
   aiAddUser(q);
   const bubble = aiAddBot("");
+  bubble.setAttribute("dir", /[؀-ۿ]/.test(q) ? "rtl" : "ltr");   // javob yo'nalishi savol tiliga qarab
   bubble.innerHTML = '<span class="ai-typing"><span class="spinner"></span> o\'ylayapti…</span>';
   try{
     const keywords = await aiExtract(q);
