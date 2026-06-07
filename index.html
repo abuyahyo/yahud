@@ -653,9 +653,9 @@ if ("serviceWorker" in navigator) {
 
 /* ===== AI assistant: o'zbekcha savol-javob (Gemini bepul / Claude pulli) ===== */
 const AI_PROVIDERS = {
-  gemini: { model: "gemini-2.5-flash", keyLS: "ai_key_gemini", hint: "AIza…",
+  gemini: { models: ["gemini-2.5-flash", "gemini-2.0-flash"], keyLS: "ai_key_gemini", hint: "AIza…",
             name: "Google Gemini", keyUrl: "https://aistudio.google.com/apikey", keyHost: "aistudio.google.com" },
-  claude: { model: "claude-opus-4-8", keyLS: "ai_key_claude", hint: "sk-ant-…",
+  claude: { models: ["claude-opus-4-8"], keyLS: "ai_key_claude", hint: "sk-ant-…",
             name: "Anthropic Claude", keyUrl: "https://console.anthropic.com/settings/keys", keyHost: "console.anthropic.com" }
 };
 const AI_PROV_LS = "ai_provider";
@@ -779,11 +779,26 @@ async function aiReadSSE(res, onEvent){
     }
   }
 }
-async function aiCheck(res){
-  if (res.ok) return;
-  let msg = "Xatolik (" + res.status + ")";
-  try{ const e = await res.json(); if (e && e.error && e.error.message) msg = e.error.message; }catch(_){}
-  const err = new Error(msg); err.status = res.status; throw err;
+function aiRetryable(status, msg){
+  return status === 429 || status === 500 || status === 502 || status === 503 ||
+    /high demand|overload|unavailable|temporarily|try again|rate.?limit/i.test(msg || "");
+}
+const aiSleep = ms => new Promise(r => setTimeout(r, ms));
+const aiBackoff = i => Math.round(1200 * Math.pow(2, i) * (0.85 + Math.random() * 0.3));
+async function aiFetchRetry(url, opts, tries = 3){
+  let last;
+  for (let i = 0; i < tries; i++){
+    let res;
+    try{ res = await fetch(url, opts); }
+    catch(e){ last = e; if (i < tries - 1){ await aiSleep(aiBackoff(i)); continue; } throw e; }
+    if (res.ok) return res;
+    let msg = "Xatolik (" + res.status + ")";
+    try{ const e = await res.clone().json(); if (e && e.error && e.error.message) msg = e.error.message; }catch(_){}
+    const err = new Error(msg); err.status = res.status;
+    if (i < tries - 1 && aiRetryable(res.status, msg)){ last = err; await aiSleep(aiBackoff(i)); continue; }
+    throw err;
+  }
+  throw last || new Error("Xatolik");
 }
 
 /* --- Claude (Anthropic) adapter --- */
@@ -792,37 +807,43 @@ function aiClaudeHeaders(){
            "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true" };
 }
 async function aiClaudeComplete(system, user){
-  const res = await fetch("https://api.anthropic.com/v1/messages", { method:"POST", headers: aiClaudeHeaders(),
-    body: JSON.stringify({ model: aiCfg().model, max_tokens: 1024, thinking:{type:"disabled"}, system, messages:[{role:"user", content:user}] }) });
-  await aiCheck(res);
+  const res = await aiFetchRetry("https://api.anthropic.com/v1/messages", { method:"POST", headers: aiClaudeHeaders(),
+    body: JSON.stringify({ model: aiCfg().models[0], max_tokens: 1024, thinking:{type:"disabled"}, system, messages:[{role:"user", content:user}] }) });
   const data = await res.json();
   return (data.content||[]).filter(b => b.type === "text").map(b => b.text).join("");
 }
 async function aiClaudeStream(system, user, onDelta){
-  const res = await fetch("https://api.anthropic.com/v1/messages", { method:"POST", headers: aiClaudeHeaders(),
-    body: JSON.stringify({ model: aiCfg().model, max_tokens: 4096, stream:true, thinking:{type:"adaptive"}, output_config:{effort:"medium"}, system, messages:[{role:"user", content:user}] }) });
-  await aiCheck(res);
+  const res = await aiFetchRetry("https://api.anthropic.com/v1/messages", { method:"POST", headers: aiClaudeHeaders(),
+    body: JSON.stringify({ model: aiCfg().models[0], max_tokens: 4096, stream:true, thinking:{type:"adaptive"}, output_config:{effort:"medium"}, system, messages:[{role:"user", content:user}] }) });
   await aiReadSSE(res, ev => { if (ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta") onDelta(ev.delta.text); });
 }
 
 /* --- Gemini (Google) adapter --- */
-function aiGeminiURL(method){
-  return `https://generativelanguage.googleapis.com/v1beta/models/${aiCfg().model}:${method}?key=${encodeURIComponent(aiKey())}`;
+async function aiGeminiFetch(method, extra, body){
+  const models = aiCfg().models;
+  let lastErr;
+  for (let mi = 0; mi < models.length; mi++){
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${models[mi]}:${method}?key=${encodeURIComponent(aiKey())}${extra}`;
+    try{
+      return await aiFetchRetry(url, { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify(body) });
+    }catch(e){
+      lastErr = e;
+      if (mi < models.length - 1 && aiRetryable(e.status, e.message)) continue;  // band — zaxira modelга o't
+      throw e;
+    }
+  }
+  throw lastErr;
 }
 async function aiGeminiComplete(system, user){
-  const res = await fetch(aiGeminiURL("generateContent"), { method:"POST", headers:{ "content-type":"application/json" },
-    body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[{ role:"user", parts:[{ text: user }] }],
-      generationConfig:{ maxOutputTokens: 1024, responseMimeType:"application/json" } }) });
-  await aiCheck(res);
+  const res = await aiGeminiFetch("generateContent", "", { system_instruction:{ parts:[{ text: system }] },
+    contents:[{ role:"user", parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: 1024, responseMimeType:"application/json" } });
   const data = await res.json();
   const c = (data.candidates||[])[0];
   return (((c && c.content && c.content.parts) || []).map(p => p.text || "").join(""));
 }
 async function aiGeminiStream(system, user, onDelta){
-  const res = await fetch(aiGeminiURL("streamGenerateContent") + "&alt=sse", { method:"POST", headers:{ "content-type":"application/json" },
-    body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[{ role:"user", parts:[{ text: user }] }],
-      generationConfig:{ maxOutputTokens: 4096 } }) });
-  await aiCheck(res);
+  const res = await aiGeminiFetch("streamGenerateContent", "&alt=sse", { system_instruction:{ parts:[{ text: system }] },
+    contents:[{ role:"user", parts:[{ text: user }] }], generationConfig:{ maxOutputTokens: 4096 } });
   await aiReadSSE(res, ev => {
     const parts = ((((ev.candidates||[])[0]||{}).content)||{}).parts || [];
     for (const p of parts) if (p.text) onDelta(p.text);
@@ -890,8 +911,10 @@ async function aiAsk(){
   }catch(err){
     let m = err.message || "Xatolik yuz berdi.";
     if (err.status === 401 || err.status === 403) m = "API kaliti noto'g'ri yoki ruxsat yo'q. ⚙ orqali tekshiring.";
-    else if (err.status === 429) m = "So'rovlar limiti oshib ketdi. Birozdan so'ng urinib ko'ring.";
     else if (err.status === 400 && /key|api[_\s-]?key|invalid/i.test(m)) m = "API kaliti noto'g'ri ko'rinadi. ⚙ orqali tekshiring.";
+    else if (err.status === 503 || err.status === 500 || err.status === 502 || /high demand|overload|unavailable|temporarily/i.test(m))
+      m = "Xizmat hozir band (yuqori talab). Bir-ikki daqiqadan so'ng qayta urinib ko'ring, yoki ⚙ orqali Claude'ni tanlang.";
+    else if (err.status === 429) m = "So'rovlar limiti oshib ketdi. Birozdan so'ng urinib ko'ring.";
     bubble.innerHTML = '<span class="ai-err"></span>';
     bubble.querySelector(".ai-err").textContent = m;
   }finally{
