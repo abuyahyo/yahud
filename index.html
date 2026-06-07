@@ -667,7 +667,8 @@ const AI_SYS = [
   "- Javobni FAQAT berilgan kontekstga asoslantir. Agar javob kontekstda bo'lmasa, buni ochiq ayt va o'zingdan to'qima.",
   "- Har bir muhim da'voni [ص N] ko'rinishidagi sahifa havolasi bilan asosla (N — kontekstdagi sahifa raqami), toki o'quvchi nimaga asoslanganingni ko'rsin.",
   "- Bu al-Messiriyning ilmiy talqini ekanini yodda tut; mutlaq haqiqat sifatida emas, muallif nuqtai nazari sifatida taqdim et.",
-  "- Aniq va hurmatli yoz; ortiqcha muqaddimasiz to'g'ridan-to'g'ri xulosadan boshla."
+  "- Aniq va hurmatli yoz; ortiqcha muqaddimasiz to'g'ridan-to'g'ri xulosadan boshla.",
+  "- Sodda formatla: muhim atamani **qalin** qilsang bo'ladi, lekin sarlavha belgilari (#) yoki ortiqcha yulduzchalar ishlatma."
 ].join("\n");
 const aiToLatin = s => String(s).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 let aiBusy = false, aiWelcomed = false;
@@ -740,9 +741,17 @@ function aiAddBot(text){
 }
 function aiScroll(){ const e = $("#aiMsgs"); e.scrollTop = e.scrollHeight; }
 
-function aiLinkify(bubble, text, sources){
-  bubble.innerHTML = esc(text).replace(/\[?\s*ص\.?\s*([0-9٠-٩]+)\s*\]?/g,
+function aiFormat(text){
+  let h = esc(text);
+  h = h.replace(/\*\*([^\n*]+?)\*\*/g, "<strong>$1</strong>");   // **qalin** → <strong>
+  h = h.replace(/^[ \t]*#{1,6}[ \t]*/gm, "");                    // # sarlavha belgilarini olib tashla
+  h = h.replace(/^[ \t]*[*-][ \t]+/gm, "• ");                    // ro'yxat belgisi → •
+  h = h.replace(/\[?\s*ص\.?\s*([0-9٠-٩]+)\s*\]?/g,
     (m, d) => `<span class="ai-cite" data-p="${aiToLatin(d)}">ص ${d}</span>`);
+  return h;
+}
+function aiLinkify(bubble, text, sources){
+  bubble.innerHTML = aiFormat(text);
   if (sources && sources.length){
     const wrap = document.createElement("div"); wrap.className = "ai-sources";
     const chips = sources.map(s => `<span class="ai-chip" data-p="${s.p}"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)}</span>`).join("");
