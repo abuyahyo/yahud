@@ -176,10 +176,23 @@
   .ai-msg.bot .ai-bubble{margin-inline-end:auto;background:var(--card-bg);border:1px solid var(--line);color:var(--ink);border-bottom-right-radius:4px}
   .ai-bubble .ai-cite{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:0 6px;margin:0 2px;font-size:13px;cursor:pointer;font-family:"Amiri",serif;white-space:nowrap}
   .ai-bubble .ai-cite:active{transform:scale(.95)}
-  .ai-sources{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-soft)}
+  .ai-sources{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-soft)}
+  .ai-src-label{font-size:11px;color:var(--ink-soft);font-family:"Amiri",serif;margin-bottom:6px}
+  .ai-chips{display:flex;flex-wrap:wrap;gap:6px}
   .ai-chip{background:var(--paper-deep);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:12px;color:var(--ink-soft);cursor:pointer;font-family:"Amiri",serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .ai-chip b{color:var(--gold);font-weight:700}
   .ai-chip:hover{background:var(--accent-soft);color:var(--accent)}
+  .ai-basis{margin-top:10px}
+  .ai-basis summary{cursor:pointer;font-family:"Amiri",serif;font-size:13px;color:var(--accent);list-style:none;padding:4px 0;user-select:none}
+  .ai-basis summary::-webkit-details-marker{display:none}
+  .ai-basis summary::before{content:"▾ ";color:var(--ink-soft)}
+  .ai-basis[open] summary::before{content:"▴ "}
+  .ai-basis-item{margin-top:8px;padding:9px 11px;background:var(--paper-deep);border:1px solid var(--line);border-radius:10px}
+  .ai-basis-h{font-family:"Amiri",serif;font-size:12px;color:var(--ink-soft);margin-bottom:5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .ai-basis-h b{color:var(--accent);font-weight:700}
+  .ai-basis-open{color:var(--accent-bright);cursor:pointer;font-size:12px}
+  .ai-basis-open:active{transform:scale(.96)}
+  .ai-basis-snip{font-family:"Amiri","Scheherazade New",serif;font-size:13px;line-height:1.85;color:var(--ink-soft);max-height:130px;overflow:auto;white-space:pre-wrap}
   .ai-typing{display:inline-flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:14px;font-family:"Amiri",serif}
   .ai-inrow{border-top:1px solid var(--line);background:var(--paper-deep);padding:10px 12px;display:flex;gap:8px;align-items:flex-end}
   .ai-inrow textarea{flex:1;resize:none;max-height:120px;font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5;color:var(--ink);background:var(--input-bg);border:1.5px solid var(--line);border-radius:14px;padding:9px 14px;outline:none}
@@ -206,7 +219,7 @@
 <div class="topbar">
   <button class="btn icon" id="tocBtn" title="فهرس المجلدات">☰</button>
   <button class="btn icon" id="searchBtn" title="بحث">⌕</button>
-  <button class="btn icon" id="aiBtn" title="المساعد الذكي — يجيب بالأوزبكية">✦</button>
+  <button class="btn icon" id="aiBtn" title="المساعد الذكي — يجيب بالأوزبكية والعربية">✦</button>
   <div class="crumb" id="crumb">جارٍ التحميل…</div>
   <div class="settings-wrap">
     <button class="btn icon" id="settingsBtn" title="الإعدادات" aria-haspopup="true" aria-expanded="false">⚙</button>
@@ -263,7 +276,7 @@
 
 <div class="ai-overlay" id="aiOv">
   <div class="ai-head">
-    <h3>✦ المساعد الذكي <span class="ai-sub">يجيب بالأوزبكية</span></h3>
+    <h3>✦ المساعد الذكي <span class="ai-sub">أوزبكي · عربي</span></h3>
     <button id="aiSettings" title="المفتاح والمزوّد">⚙</button>
     <button id="aiX" aria-label="إغلاق">✕</button>
   </div>
@@ -649,11 +662,12 @@ const AI_PROV_LS = "ai_provider";
 const AI_SYS = [
   "Sen «موسوعة اليهود واليهودية والصهيونية» (muallif: د. عبد الوهاب المسيري) ensiklopediyasi bo'yicha yordamchisan.",
   "Qoidalar:",
-  "- HAR DOIM faqat o'zbek tilida (lotin alifbosida) javob ber.",
-  "- Javobni FAQAT berilgan sahifalar matniga (kontekstga) asoslantir. Agar javob kontekstda bo'lmasa, buni ochiq ayt va o'zingdan to'qima.",
-  "- Bu — al-Messiriyning ilmiy talqini ekanini yodda tut; uni mutlaq haqiqat sifatida emas, muallifning nuqtai nazari sifatida taqdim et (kerak bo'lganda eslat).",
-  "- Foydalangan sahifaga [ص N] ko'rinishida havola qil (N — kontekstdagi sahifa raqami).",
-  "- Aniq, qisqa va hurmatli yoz; ortiqcha muqaddimasiz to'g'ridan-to'g'ri javob ber."
+  "- TIL: foydalanuvchi qaysi tilda yozsa — o'zbekcha bo'lsa o'zbek tilida (lotin alifbosida), arabcha bo'lsa arab tilida — javobni AYNAN o'sha tilda ber.",
+  "- Berilgan sahifalar (kontekst) asosida masalani TAHLIL QILIB, o'zing aniq XULOSA chiqar. Faqat ko'chirma keltirib qo'yma — fikrlarni sintez qil.",
+  "- Javobni FAQAT berilgan kontekstga asoslantir. Agar javob kontekstda bo'lmasa, buni ochiq ayt va o'zingdan to'qima.",
+  "- Har bir muhim da'voni [ص N] ko'rinishidagi sahifa havolasi bilan asosla (N — kontekstdagi sahifa raqami), toki o'quvchi nimaga asoslanganingni ko'rsin.",
+  "- Bu al-Messiriyning ilmiy talqini ekanini yodda tut; mutlaq haqiqat sifatida emas, muallif nuqtai nazari sifatida taqdim et.",
+  "- Aniq va hurmatli yoz; ortiqcha muqaddimasiz to'g'ridan-to'g'ri xulosadan boshla."
 ].join("\n");
 const aiToLatin = s => String(s).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
 let aiBusy = false, aiWelcomed = false;
@@ -679,7 +693,7 @@ function aiShowSetup(){
   const prov = aiProvider(), cfg = aiCfg(), saved = aiKey();
   box.innerHTML = `
     <h4>✦ المساعد الذكي</h4>
-    <p>يقرأ هذا المساعد نصّ الموسوعة ويجيب عن أسئلتك <b>بالأوزبكية</b> اعتمادًا على ما ورد فيها، مع الإحالة إلى الصفحات.</p>
+    <p>يقرأ هذا المساعد نصّ الموسوعة ويجيب عن أسئلتك <b>بالأوزبكية أو العربية</b> (بحسب لغة سؤالك)، فيستخلص نتيجةً ويعرض الصفحات التي استند إليها.</p>
     <p>اختر مزوّد الذكاء الاصطناعي:</p>
     <div class="ai-provrow">
       <button class="ai-prov ${prov==='gemini'?'on':''}" data-prov="gemini">Google Gemini<small>مجاني</small></button>
@@ -708,7 +722,7 @@ function aiHideSetup(){ $("#aiSetup").style.display = "none"; $("#aiMsgs").style
 function aiWelcome(){
   if (aiWelcomed) return;
   aiWelcomed = true;
-  aiAddBot("Assalomu alaykum! Men ensiklopediya matniga asoslanib savollaringizga o'zbek tilida javob beraman. Savolingizni yozing — masalan: «Sionizm nima?» yoki «Yahudiy jamoalari haqida nima deyilgan?»");
+  aiAddBot("Assalomu alaykum! Ensiklopediya matni asosida xulosa chiqaraman va nimaga asoslanganimni (manba sahifalarini) ko'rsataman. Savolni o'zbek yoki arab tilida yozing — javob ham o'sha tilda bo'ladi. Masalan: «Sionizm nima?» yoki «ما هي الصهيونية؟»");
 }
 
 function aiAddUser(text){
@@ -731,11 +745,18 @@ function aiLinkify(bubble, text, sources){
     (m, d) => `<span class="ai-cite" data-p="${aiToLatin(d)}">ص ${d}</span>`);
   if (sources && sources.length){
     const wrap = document.createElement("div"); wrap.className = "ai-sources";
-    wrap.innerHTML = sources.map(s => `<span class="ai-chip" data-p="${s.p}"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)}</span>`).join("");
+    const chips = sources.map(s => `<span class="ai-chip" data-p="${s.p}"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)}</span>`).join("");
+    const items = sources.map(s => {
+      const snip = (s.t||"").replace(/\s+/g," ").trim().slice(0, 340);
+      return `<div class="ai-basis-item"><div class="ai-basis-h"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)} <span class="ai-basis-open" data-p="${s.p}">افتح ↗</span></div><div class="ai-basis-snip" dir="rtl">${esc(snip)}…</div></div>`;
+    }).join("");
+    wrap.innerHTML =
+      `<div class="ai-src-label">المصادر · Manbalar</div><div class="ai-chips">${chips}</div>` +
+      `<details class="ai-basis"><summary>على ماذا استندتُ؟ · Nimaga asoslandim?</summary>${items}</details>`;
     bubble.appendChild(wrap);
   }
-  bubble.querySelectorAll(".ai-cite,.ai-chip").forEach(el => {
-    el.onclick = () => { aiOv.classList.remove("show"); goToPage(+el.dataset.p); };
+  bubble.querySelectorAll(".ai-cite,.ai-chip,.ai-basis-open").forEach(el => {
+    el.onclick = e => { e.stopPropagation(); aiOv.classList.remove("show"); goToPage(+el.dataset.p); };
   });
 }
 

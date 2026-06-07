@@ -1,7 +1,7 @@
 /* Service worker: قارئ موسوعة اليهود واليهودية والصهيونية.
  * «الشبكة أولًا» للقشرة وملفّات البيانات؛ المتّصل يحصل دائمًا على أحدث نسخة،
  * ويعمل التطبيق دون اتصال من آخر نسخة محفوظة. */
-const VERSION = 'v5-2026-06-07';
+const VERSION = 'v6-2026-06-07';
 const CACHE = 'yahud-' + VERSION;
 const CORE = ['./', './index.html', './meta.json', './manifest.webmanifest',
               './icon.svg', './icon-192.png', './icon-512.png',
