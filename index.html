@@ -163,7 +163,7 @@
   .install-bar .install-x{flex:none;background:transparent;border:none;color:var(--ink-soft);font-size:18px;cursor:pointer;width:28px;height:28px}
 
   /* AI assistant (savol-javob) */
-  .ai-overlay{position:fixed;inset:0;background:var(--paper);z-index:55;display:none;flex-direction:column}
+  .ai-overlay{position:fixed;inset:0;background:var(--paper);z-index:55;display:none;flex-direction:column;direction:ltr;text-align:left}
   .ai-overlay.show{display:flex}
   .ai-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:var(--paper-deep);font-family:"Amiri",serif}
   .ai-head h3{flex:1;color:var(--accent);font-size:18px;display:flex;align-items:baseline;gap:8px;min-width:0}
@@ -219,7 +219,7 @@
 <div class="topbar">
   <button class="btn icon" id="tocBtn" title="فهرس المجلدات">☰</button>
   <button class="btn icon" id="searchBtn" title="بحث">⌕</button>
-  <button class="btn icon" id="aiBtn" title="المساعد الذكي — يجيب بالأوزبكية والعربية">✦</button>
+  <button class="btn icon" id="aiBtn" title="AI yordamchi — o'zbek va arab tilida">✦</button>
   <div class="crumb" id="crumb">جارٍ التحميل…</div>
   <div class="settings-wrap">
     <button class="btn icon" id="settingsBtn" title="الإعدادات" aria-haspopup="true" aria-expanded="false">⚙</button>
@@ -276,15 +276,15 @@
 
 <div class="ai-overlay" id="aiOv">
   <div class="ai-head">
-    <h3>✦ المساعد الذكي <span class="ai-sub">أوزبكي · عربي</span></h3>
-    <button id="aiSettings" title="المفتاح والمزوّد">⚙</button>
-    <button id="aiX" aria-label="إغلاق">✕</button>
+    <h3>✦ AI yordamchi <span class="ai-sub">o'zbek · arab</span></h3>
+    <button id="aiSettings" title="Kalit va provayder">⚙</button>
+    <button id="aiX" aria-label="Yopish">✕</button>
   </div>
   <div class="ai-setup" id="aiSetup" style="display:none"></div>
   <div class="ai-msgs" id="aiMsgs"></div>
   <div class="ai-inrow" id="aiInrow">
-    <textarea id="aiInput" rows="1" dir="auto" placeholder="Savolingizni yozing… / اكتب سؤالك"></textarea>
-    <button class="ai-send" id="aiSend" aria-label="إرسال">➤</button>
+    <textarea id="aiInput" rows="1" dir="auto" placeholder="Savolingizni yozing…"></textarea>
+    <button class="ai-send" id="aiSend" aria-label="Yuborish">➤</button>
   </div>
 </div>
 
@@ -693,25 +693,25 @@ function aiShowSetup(){
   const box = $("#aiSetup");
   const prov = aiProvider(), cfg = aiCfg(), saved = aiKey();
   box.innerHTML = `
-    <h4>✦ المساعد الذكي</h4>
-    <p>يقرأ هذا المساعد نصّ الموسوعة ويجيب عن أسئلتك <b>بالأوزبكية أو العربية</b> (بحسب لغة سؤالك)، فيستخلص نتيجةً ويعرض الصفحات التي استند إليها.</p>
-    <p>اختر مزوّد الذكاء الاصطناعي:</p>
+    <h4>✦ AI yordamchi</h4>
+    <p>Bu yordamchi ensiklopediya matnini o'qib, savolingizga <b>o'zbek yoki arab tilida</b> (savolingiz qaysi tilda bo'lsa) javob beradi: xulosa chiqaradi va asos bo'lgan sahifalarni ko'rsatadi.</p>
+    <p>Sun'iy intellekt provayderini tanlang:</p>
     <div class="ai-provrow">
-      <button class="ai-prov ${prov==='gemini'?'on':''}" data-prov="gemini">Google Gemini<small>مجاني</small></button>
-      <button class="ai-prov ${prov==='claude'?'on':''}" data-prov="claude">Claude<small>مدفوع · أدقّ</small></button>
+      <button class="ai-prov ${prov==='gemini'?'on':''}" data-prov="gemini">Google Gemini<small>bepul</small></button>
+      <button class="ai-prov ${prov==='claude'?'on':''}" data-prov="claude">Claude<small>pulli · aniqroq</small></button>
     </div>
-    <p>أدخِل مفتاح <b>${cfg.name}</b> الخاصّ بك. يُحفَظ في متصفّحك فقط ولا يمرّ بأيّ خادمٍ وسيط.</p>
-    <p>أنشئ مفتاحًا من <a href="${cfg.keyUrl}" target="_blank" rel="noopener">${cfg.keyHost}</a>.</p>
-    ${saved ? '<p style="color:var(--accent)">✓ يوجد مفتاحٌ محفوظ لهذا المزوّد. أدخِل آخر لاستبداله.</p>' : ''}
+    <p><b>${cfg.name}</b> API kalitingizni kiriting. Kalit faqat brauzeringizda saqlanadi, hech qanday oraliq serverga yuborilmaydi.</p>
+    <p>Kalitni <a href="${cfg.keyUrl}" target="_blank" rel="noopener">${cfg.keyHost}</a> dan oling.</p>
+    ${saved ? '<p style="color:var(--accent)">✓ Bu provayder uchun kalit saqlangan. Almashtirish uchun yangisini kiriting.</p>' : ''}
     <input id="aiKeyInput" type="password" placeholder="${cfg.hint}" autocomplete="off" spellcheck="false">
-    <button class="ai-save" id="aiSaveKey">حفظ ومتابعة</button>
-    ${saved ? '<button class="ai-save" id="aiClearKey" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line);margin-top:10px">حذف المفتاح المحفوظ</button>' : ''}
+    <button class="ai-save" id="aiSaveKey">Saqlash va davom etish</button>
+    ${saved ? '<button class="ai-save" id="aiClearKey" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line);margin-top:10px">Saqlangan kalitni o\'chirish</button>' : ''}
     <div class="ai-err" id="aiSetupErr"></div>`;
   box.style.display = ""; $("#aiMsgs").style.display = "none"; $("#aiInrow").style.display = "none";
   box.querySelectorAll(".ai-prov").forEach(b => b.onclick = () => { localStorage.setItem(AI_PROV_LS, b.dataset.prov); aiShowSetup(); });
   $("#aiSaveKey").onclick = () => {
     const k = $("#aiKeyInput").value.trim();
-    if (!k){ $("#aiSetupErr").textContent = "أدخِل مفتاحًا صالحًا."; return; }
+    if (!k){ $("#aiSetupErr").textContent = "To'g'ri kalit kiriting."; return; }
     localStorage.setItem(aiCfg().keyLS, k);
     aiHideSetup(); aiWelcome(); $("#aiInput").focus();
   };
@@ -747,21 +747,21 @@ function aiFormat(text){
   h = h.replace(/^[ \t]*#{1,6}[ \t]*/gm, "");                    // # sarlavha belgilarini olib tashla
   h = h.replace(/^[ \t]*[*-][ \t]+/gm, "• ");                    // ro'yxat belgisi → •
   h = h.replace(/\[?\s*ص\.?\s*([0-9٠-٩]+)\s*\]?/g,
-    (m, d) => `<span class="ai-cite" data-p="${aiToLatin(d)}">ص ${d}</span>`);
+    (m, d) => `<span class="ai-cite" data-p="${aiToLatin(d)}">bet ${aiToLatin(d)}</span>`);
   return h;
 }
 function aiLinkify(bubble, text, sources){
   bubble.innerHTML = aiFormat(text);
   if (sources && sources.length){
     const wrap = document.createElement("div"); wrap.className = "ai-sources";
-    const chips = sources.map(s => `<span class="ai-chip" data-p="${s.p}"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)}</span>`).join("");
+    const chips = sources.map(s => `<span class="ai-chip" data-p="${s.p}"><b>bet ${s.p}</b> · ${esc(s.ch)}</span>`).join("");
     const items = sources.map(s => {
       const snip = (s.t||"").replace(/\s+/g," ").trim().slice(0, 340);
-      return `<div class="ai-basis-item"><div class="ai-basis-h"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)} <span class="ai-basis-open" data-p="${s.p}">افتح ↗</span></div><div class="ai-basis-snip" dir="rtl">${esc(snip)}…</div></div>`;
+      return `<div class="ai-basis-item"><div class="ai-basis-h"><b>bet ${s.p}</b> · ${esc(s.ch)} <span class="ai-basis-open" data-p="${s.p}">ochish ↗</span></div><div class="ai-basis-snip" dir="rtl">${esc(snip)}…</div></div>`;
     }).join("");
     wrap.innerHTML =
-      `<div class="ai-src-label">المصادر · Manbalar</div><div class="ai-chips">${chips}</div>` +
-      `<details class="ai-basis"><summary>على ماذا استندتُ؟ · Nimaga asoslandim?</summary>${items}</details>`;
+      `<div class="ai-src-label">Manbalar</div><div class="ai-chips">${chips}</div>` +
+      `<details class="ai-basis"><summary>Nimaga asoslandim?</summary>${items}</details>`;
     bubble.appendChild(wrap);
   }
   bubble.querySelectorAll(".ai-cite,.ai-chip,.ai-basis-open").forEach(el => {
@@ -906,7 +906,7 @@ async function aiAsk(){
   aiBusy = true; $("#aiSend").disabled = true;
   aiAddUser(q);
   const bubble = aiAddBot("");
-  bubble.innerHTML = '<span class="ai-typing"><span class="spinner"></span> يفكّر…</span>';
+  bubble.innerHTML = '<span class="ai-typing"><span class="spinner"></span> o\'ylayapti…</span>';
   try{
     const keywords = await aiExtract(q);
     const pages = await aiRetrieve(keywords);
