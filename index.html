@@ -154,6 +154,44 @@
   .install-bar .install-msg{flex:1;font-size:14px;color:var(--ink);line-height:1.7}
   .install-bar .install-do{flex:none;background:var(--accent);color:var(--accent-fg);border:none;border-radius:18px;padding:7px 16px;font-family:inherit;font-size:15px;cursor:pointer}
   .install-bar .install-x{flex:none;background:transparent;border:none;color:var(--ink-soft);font-size:18px;cursor:pointer;width:28px;height:28px}
+
+  /* AI assistant (savol-javob) */
+  .ai-overlay{position:fixed;inset:0;background:var(--paper);z-index:55;display:none;flex-direction:column}
+  .ai-overlay.show{display:flex}
+  .ai-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:8px;background:var(--paper-deep);font-family:"Amiri",serif}
+  .ai-head h3{flex:1;color:var(--accent);font-size:18px;display:flex;align-items:baseline;gap:8px;min-width:0}
+  .ai-head .ai-sub{font-size:11px;color:var(--ink-soft);font-weight:400;white-space:nowrap}
+  .ai-head button{background:none;border:none;color:var(--ink-soft);font-size:20px;cursor:pointer;padding:4px 8px}
+  .ai-msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+  .ai-msg{display:flex}
+  .ai-bubble{max-width:88%;padding:11px 14px;border-radius:14px;line-height:1.85;font-size:15px;white-space:pre-wrap;word-wrap:break-word;box-shadow:0 1px 6px var(--shadow)}
+  .ai-msg.user .ai-bubble{margin-inline-start:auto;background:var(--accent);color:var(--accent-fg);border-bottom-left-radius:4px}
+  .ai-msg.bot .ai-bubble{margin-inline-end:auto;background:var(--card-bg);border:1px solid var(--line);color:var(--ink);border-bottom-right-radius:4px}
+  .ai-bubble .ai-cite{display:inline-block;background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:0 6px;margin:0 2px;font-size:13px;cursor:pointer;font-family:"Amiri",serif;white-space:nowrap}
+  .ai-bubble .ai-cite:active{transform:scale(.95)}
+  .ai-sources{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px dashed var(--line-soft)}
+  .ai-chip{background:var(--paper-deep);border:1px solid var(--line);border-radius:10px;padding:4px 10px;font-size:12px;color:var(--ink-soft);cursor:pointer;font-family:"Amiri",serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ai-chip b{color:var(--gold);font-weight:700}
+  .ai-chip:hover{background:var(--accent-soft);color:var(--accent)}
+  .ai-typing{display:inline-flex;align-items:center;gap:8px;color:var(--ink-soft);font-size:14px;font-family:"Amiri",serif}
+  .ai-inrow{border-top:1px solid var(--line);background:var(--paper-deep);padding:10px 12px;display:flex;gap:8px;align-items:flex-end}
+  .ai-inrow textarea{flex:1;resize:none;max-height:120px;font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.5;color:var(--ink);background:var(--input-bg);border:1.5px solid var(--line);border-radius:14px;padding:9px 14px;outline:none}
+  .ai-inrow textarea:focus{border-color:var(--accent-bright)}
+  .ai-inrow .ai-send{flex:none;background:var(--accent);color:var(--accent-fg);border:none;border-radius:50%;width:42px;height:42px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .ai-inrow .ai-send[disabled]{opacity:.4;cursor:default}
+  .ai-setup{flex:1;overflow-y:auto;padding:28px 20px;font-family:"Amiri",serif;max-width:540px;margin:0 auto;width:100%}
+  .ai-setup h4{color:var(--accent);font-size:20px;margin-bottom:12px}
+  .ai-setup p{color:var(--ink-soft);font-size:14px;line-height:1.9;margin-bottom:14px}
+  .ai-setup a{color:var(--accent-bright)}
+  .ai-provrow{display:flex;gap:8px;margin-bottom:14px}
+  .ai-prov{flex:1;background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:10px;font-family:"Amiri",serif;font-size:15px;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px}
+  .ai-prov small{font-size:11px;color:var(--ink-soft)}
+  .ai-prov.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+  .ai-prov.on small{color:var(--accent-bright)}
+  .ai-setup input{width:100%;font-family:system-ui,monospace;font-size:14px;color:var(--ink);background:var(--input-bg);border:1.5px solid var(--line);border-radius:12px;padding:11px 14px;outline:none;margin-bottom:12px;direction:ltr;text-align:left}
+  .ai-setup .ai-save{background:var(--accent);color:var(--accent-fg);border:none;border-radius:12px;padding:11px 22px;font-family:"Amiri",serif;font-size:16px;cursor:pointer;width:100%}
+  .ai-err{color:#c0392b;font-size:13px;margin-top:8px;line-height:1.7}
+  body.dark .ai-err{color:#e88}
 </style>
 </head>
 <body>
@@ -161,6 +199,7 @@
 <div class="topbar">
   <button class="btn icon" id="tocBtn" title="فهرس المجلدات">☰</button>
   <button class="btn icon" id="searchBtn" title="بحث">⌕</button>
+  <button class="btn icon" id="aiBtn" title="المساعد الذكي — يجيب بالأوزبكية">✦</button>
   <div class="crumb" id="crumb">جارٍ التحميل…</div>
   <button class="btn icon" id="themeBtn" title="الوضع الليلي">🌙</button>
   <button class="btn icon" id="decBtn" title="تصغير الخطّ">ا−</button>
@@ -200,6 +239,20 @@
     <span class="progress" id="searchProg"></span>
   </div>
   <div class="search-results" id="searchRes"></div>
+</div>
+
+<div class="ai-overlay" id="aiOv">
+  <div class="ai-head">
+    <h3>✦ المساعد الذكي <span class="ai-sub">يجيب بالأوزبكية</span></h3>
+    <button id="aiSettings" title="المفتاح والمزوّد">⚙</button>
+    <button id="aiX" aria-label="إغلاق">✕</button>
+  </div>
+  <div class="ai-setup" id="aiSetup" style="display:none"></div>
+  <div class="ai-msgs" id="aiMsgs"></div>
+  <div class="ai-inrow" id="aiInrow">
+    <textarea id="aiInput" rows="1" placeholder="Savolingizni yozing… / اكتب سؤالك"></textarea>
+    <button class="ai-send" id="aiSend" aria-label="إرسال">➤</button>
+  </div>
 </div>
 
 <div class="install-bar" id="installBar">
@@ -550,6 +603,251 @@ if ("serviceWorker" in navigator) {
     setTimeout(() => { if (!bar.classList.contains("show")) show("لتثبيت التطبيق: اضغط زرّ المشاركة ⬆︎ ثمّ «أضِف إلى الشاشة الرئيسية».", false); }, 1500);
   }
 })();
+
+/* ===== AI assistant: o'zbekcha savol-javob (Gemini bepul / Claude pulli) ===== */
+const AI_PROVIDERS = {
+  gemini: { model: "gemini-2.5-flash", keyLS: "ai_key_gemini", hint: "AIza…",
+            name: "Google Gemini", keyUrl: "https://aistudio.google.com/apikey", keyHost: "aistudio.google.com" },
+  claude: { model: "claude-opus-4-8", keyLS: "ai_key_claude", hint: "sk-ant-…",
+            name: "Anthropic Claude", keyUrl: "https://console.anthropic.com/settings/keys", keyHost: "console.anthropic.com" }
+};
+const AI_PROV_LS = "ai_provider";
+const AI_SYS = [
+  "Sen «موسوعة اليهود واليهودية والصهيونية» (muallif: د. عبد الوهاب المسيري) ensiklopediyasi bo'yicha yordamchisan.",
+  "Qoidalar:",
+  "- HAR DOIM faqat o'zbek tilida (lotin alifbosida) javob ber.",
+  "- Javobni FAQAT berilgan sahifalar matniga (kontekstga) asoslantir. Agar javob kontekstda bo'lmasa, buni ochiq ayt va o'zingdan to'qima.",
+  "- Bu — al-Messiriyning ilmiy talqini ekanini yodda tut; uni mutlaq haqiqat sifatida emas, muallifning nuqtai nazari sifatida taqdim et (kerak bo'lganda eslat).",
+  "- Foydalangan sahifaga [ص N] ko'rinishida havola qil (N — kontekstdagi sahifa raqami).",
+  "- Aniq, qisqa va hurmatli yoz; ortiqcha muqaddimasiz to'g'ridan-to'g'ri javob ber."
+].join("\n");
+const aiToLatin = s => String(s).replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d));
+let aiBusy = false, aiWelcomed = false;
+
+function aiProvider(){ return AI_PROVIDERS[localStorage.getItem(AI_PROV_LS)] ? localStorage.getItem(AI_PROV_LS) : "gemini"; }
+function aiCfg(){ return AI_PROVIDERS[aiProvider()]; }
+function aiKey(){ return localStorage.getItem(aiCfg().keyLS) || ""; }
+
+const aiOv = $("#aiOv");
+$("#aiBtn").onclick = aiOpen;
+$("#aiX").onclick = () => aiOv.classList.remove("show");
+$("#aiSettings").onclick = aiShowSetup;
+document.addEventListener("keydown", e => { if (e.key === "Escape" && aiOv.classList.contains("show")) aiOv.classList.remove("show"); });
+
+function aiOpen(){
+  aiOv.classList.add("show");
+  if (!aiKey()) aiShowSetup();
+  else { aiHideSetup(); aiWelcome(); $("#aiInput").focus(); }
+}
+
+function aiShowSetup(){
+  const box = $("#aiSetup");
+  const prov = aiProvider(), cfg = aiCfg(), saved = aiKey();
+  box.innerHTML = `
+    <h4>✦ المساعد الذكي</h4>
+    <p>يقرأ هذا المساعد نصّ الموسوعة ويجيب عن أسئلتك <b>بالأوزبكية</b> اعتمادًا على ما ورد فيها، مع الإحالة إلى الصفحات.</p>
+    <p>اختر مزوّد الذكاء الاصطناعي:</p>
+    <div class="ai-provrow">
+      <button class="ai-prov ${prov==='gemini'?'on':''}" data-prov="gemini">Google Gemini<small>مجاني</small></button>
+      <button class="ai-prov ${prov==='claude'?'on':''}" data-prov="claude">Claude<small>مدفوع · أدقّ</small></button>
+    </div>
+    <p>أدخِل مفتاح <b>${cfg.name}</b> الخاصّ بك. يُحفَظ في متصفّحك فقط ولا يمرّ بأيّ خادمٍ وسيط.</p>
+    <p>أنشئ مفتاحًا من <a href="${cfg.keyUrl}" target="_blank" rel="noopener">${cfg.keyHost}</a>.</p>
+    ${saved ? '<p style="color:var(--accent)">✓ يوجد مفتاحٌ محفوظ لهذا المزوّد. أدخِل آخر لاستبداله.</p>' : ''}
+    <input id="aiKeyInput" type="password" placeholder="${cfg.hint}" autocomplete="off" spellcheck="false">
+    <button class="ai-save" id="aiSaveKey">حفظ ومتابعة</button>
+    ${saved ? '<button class="ai-save" id="aiClearKey" style="background:transparent;color:var(--ink-soft);border:1px solid var(--line);margin-top:10px">حذف المفتاح المحفوظ</button>' : ''}
+    <div class="ai-err" id="aiSetupErr"></div>`;
+  box.style.display = ""; $("#aiMsgs").style.display = "none"; $("#aiInrow").style.display = "none";
+  box.querySelectorAll(".ai-prov").forEach(b => b.onclick = () => { localStorage.setItem(AI_PROV_LS, b.dataset.prov); aiShowSetup(); });
+  $("#aiSaveKey").onclick = () => {
+    const k = $("#aiKeyInput").value.trim();
+    if (!k){ $("#aiSetupErr").textContent = "أدخِل مفتاحًا صالحًا."; return; }
+    localStorage.setItem(aiCfg().keyLS, k);
+    aiHideSetup(); aiWelcome(); $("#aiInput").focus();
+  };
+  const cl = $("#aiClearKey");
+  if (cl) cl.onclick = () => { localStorage.removeItem(aiCfg().keyLS); aiShowSetup(); };
+}
+function aiHideSetup(){ $("#aiSetup").style.display = "none"; $("#aiMsgs").style.display = ""; $("#aiInrow").style.display = ""; }
+
+function aiWelcome(){
+  if (aiWelcomed) return;
+  aiWelcomed = true;
+  aiAddBot("Assalomu alaykum! Men ensiklopediya matniga asoslanib savollaringizga o'zbek tilida javob beraman. Savolingizni yozing — masalan: «Sionizm nima?» yoki «Yahudiy jamoalari haqida nima deyilgan?»");
+}
+
+function aiAddUser(text){
+  const m = document.createElement("div"); m.className = "ai-msg user";
+  m.innerHTML = '<div class="ai-bubble" dir="auto"></div>';
+  m.querySelector(".ai-bubble").textContent = text;
+  $("#aiMsgs").appendChild(m); aiScroll();
+}
+function aiAddBot(text){
+  const m = document.createElement("div"); m.className = "ai-msg bot";
+  m.innerHTML = '<div class="ai-bubble" dir="auto"></div>';
+  m.querySelector(".ai-bubble").textContent = text;
+  $("#aiMsgs").appendChild(m); aiScroll();
+  return m.querySelector(".ai-bubble");
+}
+function aiScroll(){ const e = $("#aiMsgs"); e.scrollTop = e.scrollHeight; }
+
+function aiLinkify(bubble, text, sources){
+  bubble.innerHTML = esc(text).replace(/\[?\s*ص\.?\s*([0-9٠-٩]+)\s*\]?/g,
+    (m, d) => `<span class="ai-cite" data-p="${aiToLatin(d)}">ص ${d}</span>`);
+  if (sources && sources.length){
+    const wrap = document.createElement("div"); wrap.className = "ai-sources";
+    wrap.innerHTML = sources.map(s => `<span class="ai-chip" data-p="${s.p}"><b>ص ${arNum(s.p)}</b> · ${esc(s.ch)}</span>`).join("");
+    bubble.appendChild(wrap);
+  }
+  bubble.querySelectorAll(".ai-cite,.ai-chip").forEach(el => {
+    el.onclick = () => { aiOv.classList.remove("show"); goToPage(+el.dataset.p); };
+  });
+}
+
+/* --- Shared SSE reader --- */
+async function aiReadSSE(res, onEvent){
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = "";
+  for(;;){
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream:true });
+    let idx;
+    while((idx = buf.indexOf("\n")) >= 0){
+      const line = buf.slice(0, idx).trim(); buf = buf.slice(idx + 1);
+      if (!line.startsWith("data:")) continue;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === "[DONE]") continue;
+      let ev; try{ ev = JSON.parse(payload); }catch(_){ continue; }
+      onEvent(ev);
+    }
+  }
+}
+async function aiCheck(res){
+  if (res.ok) return;
+  let msg = "Xatolik (" + res.status + ")";
+  try{ const e = await res.json(); if (e && e.error && e.error.message) msg = e.error.message; }catch(_){}
+  const err = new Error(msg); err.status = res.status; throw err;
+}
+
+/* --- Claude (Anthropic) adapter --- */
+function aiClaudeHeaders(){
+  return { "content-type":"application/json", "x-api-key": aiKey(),
+           "anthropic-version":"2023-06-01", "anthropic-dangerous-direct-browser-access":"true" };
+}
+async function aiClaudeComplete(system, user){
+  const res = await fetch("https://api.anthropic.com/v1/messages", { method:"POST", headers: aiClaudeHeaders(),
+    body: JSON.stringify({ model: aiCfg().model, max_tokens: 1024, thinking:{type:"disabled"}, system, messages:[{role:"user", content:user}] }) });
+  await aiCheck(res);
+  const data = await res.json();
+  return (data.content||[]).filter(b => b.type === "text").map(b => b.text).join("");
+}
+async function aiClaudeStream(system, user, onDelta){
+  const res = await fetch("https://api.anthropic.com/v1/messages", { method:"POST", headers: aiClaudeHeaders(),
+    body: JSON.stringify({ model: aiCfg().model, max_tokens: 4096, stream:true, thinking:{type:"adaptive"}, output_config:{effort:"medium"}, system, messages:[{role:"user", content:user}] }) });
+  await aiCheck(res);
+  await aiReadSSE(res, ev => { if (ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta") onDelta(ev.delta.text); });
+}
+
+/* --- Gemini (Google) adapter --- */
+function aiGeminiURL(method){
+  return `https://generativelanguage.googleapis.com/v1beta/models/${aiCfg().model}:${method}?key=${encodeURIComponent(aiKey())}`;
+}
+async function aiGeminiComplete(system, user){
+  const res = await fetch(aiGeminiURL("generateContent"), { method:"POST", headers:{ "content-type":"application/json" },
+    body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[{ role:"user", parts:[{ text: user }] }],
+      generationConfig:{ maxOutputTokens: 1024, responseMimeType:"application/json" } }) });
+  await aiCheck(res);
+  const data = await res.json();
+  const c = (data.candidates||[])[0];
+  return (((c && c.content && c.content.parts) || []).map(p => p.text || "").join(""));
+}
+async function aiGeminiStream(system, user, onDelta){
+  const res = await fetch(aiGeminiURL("streamGenerateContent") + "&alt=sse", { method:"POST", headers:{ "content-type":"application/json" },
+    body: JSON.stringify({ system_instruction:{ parts:[{ text: system }] }, contents:[{ role:"user", parts:[{ text: user }] }],
+      generationConfig:{ maxOutputTokens: 4096 } }) });
+  await aiCheck(res);
+  await aiReadSSE(res, ev => {
+    const parts = ((((ev.candidates||[])[0]||{}).content)||{}).parts || [];
+    for (const p of parts) if (p.text) onDelta(p.text);
+  });
+}
+
+function aiComplete(system, user){ return aiProvider() === "claude" ? aiClaudeComplete(system, user) : aiGeminiComplete(system, user); }
+function aiStreamAnswer(system, user, onDelta){ return aiProvider() === "claude" ? aiClaudeStream(system, user, onDelta) : aiGeminiStream(system, user, onDelta); }
+
+/* --- Retrieval-augmented flow --- */
+function aiParseList(txt){
+  if (!txt) return [];
+  try{ const o = JSON.parse(txt); if (Array.isArray(o)) return o.filter(x => typeof x === "string"); if (o && Array.isArray(o.keywords)) return o.keywords; }catch(_){}
+  const m = txt.match(/\[[\s\S]*\]/);
+  if (m){ try{ const a = JSON.parse(m[0]); if (Array.isArray(a)) return a.filter(x => typeof x === "string"); }catch(_){} }
+  return [];
+}
+async function aiExtract(question){
+  const sys = "Foydalanuvchi savolidan «موسوعة اليهود واليهودية والصهيونية» (د. عبد الوهاب المسيري) ensiklopediyasida izlash uchun arabcha kalit so'zlar chiqar. Savol mazmunini arab tiliga o'girib, 3-8 ta arabcha atama va sinonim ber. FAQAT arabcha so'zlardan iborat JSON massiv qaytar, masalan: [\"الصهيونية\",\"اليهود\"]. Boshqa hech narsa yozma.";
+  return aiParseList(await aiComplete(sys, question));
+}
+async function aiRetrieve(keywords){
+  await Promise.all(META.volumes.map(v => loadVol(v.n)));
+  const nqs = keywords.map(normalize).filter(x => x && x.length >= 2);
+  if (!nqs.length) return [];
+  const hits = [];
+  for (const v of META.volumes){
+    const vol = VOLS[v.n]; if (!vol) continue;
+    for (const pg of vol.pages){
+      if (!pg._n) continue;
+      let score = 0;
+      for (const nq of nqs) if (pg._n.indexOf(nq) >= 0) score++;
+      if (score) hits.push({ score, p: pg.p, vol: v.n, ch: vol.chapters[pg.c].title, t: pg.t });
+    }
+  }
+  hits.sort((a,b) => b.score - a.score || a.p - b.p);
+  return hits.slice(0, 6);
+}
+async function aiAnswer(question, pages, onDelta){
+  let ctx = pages.map(p => `[ص ${arNum(p.p)} — ${p.ch}]\n${(p.t||"").slice(0,1800)}`).join("\n\n———\n\n");
+  if (!ctx) ctx = "(لا توجد صفحات مطابقة في الموسوعة)";
+  await aiStreamAnswer(AI_SYS, `Savol: ${question}\n\nEnsiklopediyadan tegishli sahifalar:\n\n${ctx}`, onDelta);
+}
+
+async function aiAsk(){
+  if (aiBusy) return;
+  const inp = $("#aiInput"), q = inp.value.trim();
+  if (!q) return;
+  if (!aiKey()){ aiShowSetup(); return; }
+  inp.value = ""; inp.style.height = "auto";
+  aiBusy = true; $("#aiSend").disabled = true;
+  aiAddUser(q);
+  const bubble = aiAddBot("");
+  bubble.innerHTML = '<span class="ai-typing"><span class="spinner"></span> يفكّر…</span>';
+  try{
+    const keywords = await aiExtract(q);
+    const pages = await aiRetrieve(keywords);
+    let acc = "", first = true;
+    await aiAnswer(q, pages, d => {
+      if (first){ bubble.textContent = ""; first = false; }
+      acc += d; bubble.textContent = acc; aiScroll();
+    });
+    if (!acc.trim()) acc = "Kechirasiz, javob ololmadim. Qayta urinib ko'ring.";
+    aiLinkify(bubble, acc, pages); aiScroll();
+  }catch(err){
+    let m = err.message || "Xatolik yuz berdi.";
+    if (err.status === 401 || err.status === 403) m = "API kaliti noto'g'ri yoki ruxsat yo'q. ⚙ orqali tekshiring.";
+    else if (err.status === 429) m = "So'rovlar limiti oshib ketdi. Birozdan so'ng urinib ko'ring.";
+    else if (err.status === 400 && /key|api[_\s-]?key|invalid/i.test(m)) m = "API kaliti noto'g'ri ko'rinadi. ⚙ orqali tekshiring.";
+    bubble.innerHTML = '<span class="ai-err"></span>';
+    bubble.querySelector(".ai-err").textContent = m;
+  }finally{
+    aiBusy = false; $("#aiSend").disabled = false;
+  }
+}
+
+const aiInput = $("#aiInput");
+$("#aiSend").onclick = aiAsk;
+aiInput.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey){ e.preventDefault(); aiAsk(); } });
+aiInput.addEventListener("input", () => { aiInput.style.height = "auto"; aiInput.style.height = Math.min(aiInput.scrollHeight, 120) + "px"; });
 
 init();
 </script>
