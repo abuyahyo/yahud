@@ -63,6 +63,13 @@
   .topbar .btn.icon{padding:8px 11px;min-width:42px;justify-content:center;font-weight:700}
   .topbar .crumb{flex:1;text-align:center;font-family:"Amiri",serif;color:var(--ink-soft);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 6px}
   .topbar .crumb b{color:var(--accent);font-weight:700}
+  .settings-wrap{position:relative;display:flex}
+  .settings-menu{position:absolute;top:calc(100% + 8px);left:0;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:0 6px 22px var(--shadow);padding:6px;min-width:200px;z-index:40;display:none;flex-direction:column}
+  .settings-menu.show{display:flex;animation:rise .18s ease both}
+  .set-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 8px;font-family:"Amiri",serif;font-size:14px;color:var(--ink)}
+  .set-row + .set-row{border-top:1px solid var(--line-soft)}
+  .set-row .set-label{color:var(--ink-soft)}
+  .set-row .set-ctrls{display:flex;gap:6px}
 
   /* Main */
   .wrap{max-width:820px;margin:0 auto;padding:clamp(14px,4vw,28px) clamp(14px,4vw,28px) 12px}
@@ -201,9 +208,22 @@
   <button class="btn icon" id="searchBtn" title="بحث">⌕</button>
   <button class="btn icon" id="aiBtn" title="المساعد الذكي — يجيب بالأوزبكية">✦</button>
   <div class="crumb" id="crumb">جارٍ التحميل…</div>
-  <button class="btn icon" id="themeBtn" title="الوضع الليلي">🌙</button>
-  <button class="btn icon" id="decBtn" title="تصغير الخطّ">ا−</button>
-  <button class="btn icon" id="incBtn" title="تكبير الخطّ">ا+</button>
+  <div class="settings-wrap">
+    <button class="btn icon" id="settingsBtn" title="الإعدادات" aria-haspopup="true" aria-expanded="false">⚙</button>
+    <div class="settings-menu" id="settingsMenu" role="menu">
+      <div class="set-row">
+        <span class="set-label">حجم الخطّ</span>
+        <span class="set-ctrls">
+          <button class="btn icon" id="decBtn" title="تصغير الخطّ">ا−</button>
+          <button class="btn icon" id="incBtn" title="تكبير الخطّ">ا+</button>
+        </span>
+      </div>
+      <div class="set-row">
+        <span class="set-label">الوضع الليلي</span>
+        <button class="btn icon" id="themeBtn" title="الوضع الليلي">🌙</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div class="wrap" id="main">
@@ -435,6 +455,20 @@ $("#themeBtn").onclick = () => {
   localStorage.setItem("reader_theme", dark ? "dark" : "light");
   applyTheme(dark);
 };
+
+/* Settings menu (font size + theme tucked behind one button) */
+const settingsBtn = $("#settingsBtn"), settingsMenu = $("#settingsMenu");
+settingsBtn.onclick = e => {
+  e.stopPropagation();
+  const open = settingsMenu.classList.toggle("show");
+  settingsBtn.setAttribute("aria-expanded", open ? "true" : "false");
+};
+document.addEventListener("click", e => {
+  if (settingsMenu.classList.contains("show") && !e.target.closest(".settings-wrap")) {
+    settingsMenu.classList.remove("show");
+    settingsBtn.setAttribute("aria-expanded", "false");
+  }
+});
 
 /* O'qish tarixi (eng yangi - boshda) */
 const HIST_KEY = "reader_history", HIST_MAX = 30;
